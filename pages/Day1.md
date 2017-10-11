@@ -1,15 +1,12 @@
 Day 1:Calculating effect sizes
 ================
 
-GitHub Documents
-----------------
+Getting started
+---------------
 
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+Let's get some data!
 
-Including Code
---------------
-
-You can include R code in the document as follows:
+[NCEAS](https://www.nceas.ucsb.edu/meta/publications.html#d_t_t) You can include R code in the document as follows:
 
 ``` r
 summary(cars)
