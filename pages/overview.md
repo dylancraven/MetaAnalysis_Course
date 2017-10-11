@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Exercises for 'Meta-analysis in biological and environmental sciences'  
+title: Exercises for 'Meta-analysis in biological and environmental sciences'
 
 ---
 

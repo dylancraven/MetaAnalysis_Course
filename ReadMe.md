@@ -1,18 +1,11 @@
-## Simple site: Easy websites with GitHub pages
+## Exercises for 'Meta-analysis in biological and environmental sciences'
 
-[Github Pages](https://pages.github.com) provide a simple way to make a
-website using Markdown and git.
+The present site is the starting point for the excercises in R that we will be using  
+to get our hands dirty and put into action topics that we have discussed in our lectures.  
 
-This is a minimal tutorial to get started.
+[Day 1: Calculating effect sizes](pages/Day1.html)  
+[Day 2: Hierarchical meta-analytical models](pages/Day2.html)  
+[Day 3: Assumptions, biases and confounding effects](pages/Day3.html)  
+[Day 4: Methodological issues, advances, and common mistakes](pages/Day4.html)  
 
-View the thing [here](http://kbroman.org/simple_site).
-
----
-
-To the extent possible under law,
-[Karl Broman](https://github.com/kbroman)
-has waived all copyright and related or neighboring rights to
-&ldquo;[simple site](https://github.com/kbroman/simple_site)&rdquo;.
-This work is published from the United States.
-<br/>
-[![CC0](https://i.creativecommons.org/p/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
+We'll mostly use the 'metafor' package in R: [metafor](http://www.metafor-project.org/doku.php)  
