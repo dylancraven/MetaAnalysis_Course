@@ -4,7 +4,7 @@ title: Exercises for 'Meta-analysis in biological and environmental sciences'
 
 ---
 
-The present site is the starting point for the excercises in R that we will be using  
+The present site is the starting point for the exercises in R that we will be using  
 to get our hands dirty and put into action topics that we have discussed in our lectures.  
 
 [Day 1: Calculating effect sizes](pages/Day1.html)  
