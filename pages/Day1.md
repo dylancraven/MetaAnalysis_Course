@@ -164,6 +164,8 @@ forest(hedges_PN$Hedges_D,hedges_PN$Hedges_var, slab=hedges_PN$GENUS, showweight
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot-1.png)
 
+![Forest plot of Hedge's D](/homes/dc78cahe/Dropbox%20(iDiv)/Teaching/MetaAnalysis_Course/pages/Day1_PN_forest.jpeg)
+
 Visualize effect sizes (part II): explore moderators
 ----------------------------------------------------
 
