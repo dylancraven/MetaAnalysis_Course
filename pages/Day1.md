@@ -262,4 +262,4 @@ forest(LRR_WUE$LRR,LRR_WUE$LRR_var, slab=LRR_WUE$GENUS, showweights=TRUE)
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot2-1.png)
 
-![Forest plot of Hedge's D](pages/Day1_WUE_forest.png)
+![Forest plot of Hedge's D](https://github.com/dylancraven/MetaAnalysis_Course/tree/gh-pages/pages/Day1_WUE_forest.jpeg)
