@@ -1,5 +1,5 @@
 ---
-title: "Day 1:Calculating effect sizes"
+title: "Day 1: Calculating effect sizes"
 output: github_document
 ---
 
@@ -7,24 +7,113 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## GitHub Documents
+## Download some data
 
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+For this exercise, we'll be using the Curtis et al. (1999) data set that contains gas exchange observations (i.e. photosynthesis)  
+of 65 tree species. This data has been extracted from 84 papers and includes mean, standard deviation, coefficient of variation, and 
+number of observations for elevated and ambient levels of C02.  
 
-## Including Code
+This data set and others are available for downloading from [NCEAS](https://www.nceas.ucsb.edu/meta/publications.html#d_t_t)  
 
-You can include R code in the document as follows:
 
-```{r cars}
-summary(cars)
+```{r curtis,echo=TRUE}
+
+require(gdata,quietly=TRUE)
+
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+
+str(curtis)
 ```
 
-## Including Plots
+## Calculate effect sizes 
 
-You can also embed plots, for example:
+For the Curtis data set, the response variables are all measured on a quantitative scale. This allows us the possibility of calculating a number of
+traditional effect sizes, including Hedge's D and the log-response ratio. In 'metafor' these effect sizes are referred to as 'SMD' and 'ROM', respectively.  
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+In this case, we need the following variables to calculate effect sizes: mean, standard deviation, and sample size. 
+
+Additionally, sampling variances can be estimated differently. The default setting (used here) is the 'large-sample approximation' (vtype='LS'). For Hedge's D,
+one can also estimate 'unbiased estimates' (vtype='UB'); for log-response ratio, 'LS' calculates sampling variance without assuming homoscedasticity while 'HO' assumes that variances are the same in control and treatment groups.  
+
+### Hedges' D: Photosynthesis  
+
+```{r curtis_ES, echo=TRUE}
+require(metafor,quietly = TRUE)
+
+curtis_ES<-escalc(measure='SMD', m1i=X_AMB , sd1i=SD_AMB, n1i=N_AMB, m2i=X_ELEV, sd2i=SD_ELEV, n2i=N_ELEV, vtype='LS',var.names=c("Hedges_D","Hedges_var"),data=curtis)
+
+str(curtis_ES)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Visualize effect sizes (part I) : forest plots     
+
+
+```{r forestplot, echo=TRUE}
+require(metafor,quietly = TRUE)
+require(dplyr,quietly=TRUE)
+
+hedges_PN<-filter(curtis_ES, PARAM=="PN")
+hedges_PN<-arrange(hedges_PN, GENUS)
+forest(hedges_PN$Hedges_D,hedges_PN$Hedges_var, slab=hedges_PN$GENUS, showweights=TRUE)
+
+```
+
+![Forest plot of Hedge's D](/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day1_PN_forest.jpeg)
+
+
+
+## Visualize effect sizes (part II): explore moderators    
+
+
+```{r forestplott, echo=TRUE}
+require(metafor,quietly = TRUE)
+require(dplyr,quietly=TRUE)
+require(ggplot2)
+
+hedges_PN<-filter(curtis_ES, PARAM=="PN")
+hedges_PN$SE<-sqrt(hedges_PN$Hedges_var)
+
+dodge <- position_dodge(width=1)
+
+ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) + 
+    #geom_errorbar(aes(ymin=Hedges_D-SE, ymax=Hedges_D+SE), width=.1,position=dodge) +
+    geom_point(position=dodge)+ labs(x="Plant group", y="Effect size")+
+     guides(fill=FALSE,colour=guide_legend(title="Plant group",title.position = "top"))+
+  
+  theme_bw()
+
+
+
+
+```
+
+![Forest plot of Hedge's D](/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day1_PN_moderator.jpeg)
+
+### LRR: water-use efficiency  
+
+
+```{r curtis_ES2, echo=TRUE}
+require(metafor,quietly = TRUE)
+
+curtis_ES2<-escalc(measure='ROM', m1i=X_AMB , sd1i=SD_AMB, n1i=N_AMB, m2i=X_ELEV, sd2i=SD_ELEV, n2i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+
+str(curtis_ES2)
+
+```
+
+
+## Visualize effect sizes (part I) : forest plots     
+
+```{r forestplot2, echo=TRUE}
+require(metafor,quietly = TRUE)
+require(dplyr,quietly=TRUE)
+
+LRR_WUE<-filter(curtis_ES2, PARAM=="WUE")
+LRR_WUE<-arrange(LRR_WUE, GENUS)
+
+forest(LRR_WUE$LRR,LRR_WUE$LRR_var, slab=LRR_WUE$GENUS, showweights=TRUE)
+```
+
+![Forest plot of Hedge's D](pages/Day1_WUE_forest.png)
