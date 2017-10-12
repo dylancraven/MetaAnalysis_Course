@@ -164,8 +164,6 @@ forest(hedges_PN$Hedges_D,hedges_PN$Hedges_var, slab=hedges_PN$GENUS, showweight
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot-1.png)
 
-![Forest plot of Hedge's D](/homes/dc78cahe/Dropbox%20(iDiv)/Teaching/MetaAnalysis_Course/pages/Day1_PN_forest.jpeg)
-
 Visualize effect sizes (part II): explore moderators
 ----------------------------------------------------
 
@@ -192,8 +190,6 @@ ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) +
 ```
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplott-1.png)
-
-![Forest plot of Hedge's D](/homes/dc78cahe/Dropbox%20(iDiv)/Teaching/MetaAnalysis_Course/pages/Day1_PN_moderator.jpeg)
 
 ### LRR: water-use efficiency
 
@@ -261,5 +257,3 @@ forest(LRR_WUE$LRR,LRR_WUE$LRR_var, slab=LRR_WUE$GENUS, showweights=TRUE)
 ```
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot2-1.png)
-
-![Forest plot of Hedge's D](https://github.com/dylancraven/MetaAnalysis_Course/tree/gh-pages/pages/Day1_WUE_forest.jpeg)
