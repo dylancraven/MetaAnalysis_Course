@@ -10,31 +10,6 @@ of 65 tree species. This data has been extracted from 84 papers and includes mea
 This data set and others are available for downloading from [NCEAS](https://www.nceas.ucsb.edu/meta/publications.html#d_t_t)
 
 ``` r
-require(gdata,quietly=TRUE)
-```
-
-    ## gdata: read.xls support for 'XLS' (Excel 97-2004) files ENABLED.
-
-    ## 
-
-    ## gdata: read.xls support for 'XLSX' (Excel 2007+) files ENABLED.
-
-    ## 
-    ## Attaching package: 'gdata'
-
-    ## The following object is masked from 'package:stats':
-    ## 
-    ##     nobs
-
-    ## The following object is masked from 'package:utils':
-    ## 
-    ##     object.size
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     startsWith
-
-``` r
 curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
 
 str(curtis)
@@ -84,12 +59,7 @@ Additionally, sampling variances can be estimated differently. The default setti
 
 ``` r
 require(metafor,quietly = TRUE)
-```
 
-    ## Loading 'metafor' package (version 2.0-0). For an overview 
-    ## and introduction to the package please type: help(metafor).
-
-``` r
 curtis_ES<-escalc(measure='SMD', m1i=X_AMB , sd1i=SD_AMB, n1i=N_AMB, m2i=X_ELEV, sd2i=SD_ELEV, n2i=N_ELEV, vtype='LS',var.names=c("Hedges_D","Hedges_var"),data=curtis)
 
 str(curtis_ES)
@@ -142,24 +112,7 @@ use the name of the larger data frame ('hedges\_PN') in the 'forest' function.
 ``` r
 require(metafor,quietly = TRUE)
 require(dplyr,quietly=TRUE)
-```
 
-    ## 
-    ## Attaching package: 'dplyr'
-
-    ## The following objects are masked from 'package:gdata':
-    ## 
-    ##     combine, first, last
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     filter, lag
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     intersect, setdiff, setequal, union
-
-``` r
 hedges_PN<-filter(curtis_ES, PARAM=="PN")
 hedges_PN<-arrange(hedges_PN, GENUS)
 hedges_PNN<-hedges_PN[1:25,]  # not necessary
@@ -178,11 +131,7 @@ Another alternative for looking at effect sizes per group would be using histogr
 require(metafor,quietly = TRUE)
 require(dplyr,quietly=TRUE)
 require(ggplot2)
-```
 
-    ## Loading required package: ggplot2
-
-``` r
 hedges_PN$SE<-sqrt(hedges_PN$Hedges_var)
 
 dodge <- position_dodge(width=1)

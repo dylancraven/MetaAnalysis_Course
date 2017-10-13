@@ -1,6 +1,11 @@
 Day 2: Hierarchical meta-analytical models
 ================
 
+For today's exercises, we'll be using the same data set as yesterday.
+
+    require(gdata,quietly=TRUE)
+    curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+
 Part I: compare fixed and random effects models
 -----------------------------------------------
 
