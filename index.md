@@ -9,13 +9,13 @@ to get our hands dirty and put into action topics that we have discussed in our 
 
 ### Before our course  
 
-1. Install [R]() and [RStudio]().  
-2. Install the following packages:
+1) Install [R](https://cran.r-project.org/) and [RStudio](https://www.rstudio.com/products/rstudio/download/).  
+2) Install the following packages:
 
 ```
 install.packages(c("metafor","compute.es","ggplot2","dplyr","reshape2","broom","tidyr"),quietly=TRUE)
 ```
-3. If you already have R installed, please update it to the latest version 
+3) If you already have R installed, please update it to the latest version 
 
 ```
 
@@ -25,7 +25,7 @@ updateR()
 
 ```
 
-4. Update your packages to the latest version as well
+4) Update your packages to the latest version as well
 
 ```
 update.packages()
