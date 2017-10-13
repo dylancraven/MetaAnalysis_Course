@@ -1,0 +1,11 @@
+---
+title: "Day 2: Hierarchical meta-analytical models"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part I: compare fixed and random effects models  
+## Part II: fit hierarchical meta-analytical model    

@@ -1,8 +1,8 @@
 Day 1: Calculating effect sizes
 ================
 
-Download some data
-------------------
+Download data
+-------------
 
 For this exercise, we'll be using the Curtis et al. (1999) data set that contains gas exchange observations (i.e. photosynthesis)
 of 65 tree species. This data has been extracted from 84 papers and includes mean, standard deviation, coefficient of variation, and number of observations for elevated and ambient levels of C02.
@@ -136,6 +136,9 @@ str(curtis_ES)
 Visualize effect sizes (part I) : forest plots
 ----------------------------------------------
 
+Please note that the first 25 observations are presented for visualization reasons. If you want to look at all effect sizes,
+use the name of the larger data frame ('hedges\_PN') in the 'forest' function.
+
 ``` r
 require(metafor,quietly = TRUE)
 require(dplyr,quietly=TRUE)
@@ -159,13 +162,17 @@ require(dplyr,quietly=TRUE)
 ``` r
 hedges_PN<-filter(curtis_ES, PARAM=="PN")
 hedges_PN<-arrange(hedges_PN, GENUS)
-forest(hedges_PN$Hedges_D,hedges_PN$Hedges_var, slab=hedges_PN$GENUS, showweights=TRUE)
+hedges_PNN<-hedges_PN[1:25,]  # not necessary
+
+forest(hedges_PNN$Hedges_D,hedges_PNN$Hedges_var, slab=hedges_PNN$GENUS, showweights=FALSE)
 ```
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot-1.png)
 
 Visualize effect sizes (part II): explore moderators
 ----------------------------------------------------
+
+Another alternative for looking at effect sizes per group would be using histograms or density distributions.
 
 ``` r
 require(metafor,quietly = TRUE)
@@ -176,12 +183,12 @@ require(ggplot2)
     ## Loading required package: ggplot2
 
 ``` r
-hedges_PN<-filter(curtis_ES, PARAM=="PN")
 hedges_PN$SE<-sqrt(hedges_PN$Hedges_var)
 
 dodge <- position_dodge(width=1)
 
 ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) + 
+    geom_hline(yintercept=0,color="red")+
     #geom_errorbar(aes(ymin=Hedges_D-SE, ymax=Hedges_D+SE), width=.1,position=dodge) +
     geom_point(position=dodge)+ labs(x="Plant group", y="Effect size")+
      guides(fill=FALSE,colour=guide_legend(title="Plant group",title.position = "top"))+
@@ -192,6 +199,8 @@ ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) +
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplott-1.png)
 
 ### LRR: water-use efficiency
+
+The log-response ratio is a commonly used effect size and -- once backtransformed -- is thought to be easier for readers to understand (e.g. the mean effect size is 10% greater than the control).
 
 ``` r
 require(metafor,quietly = TRUE)
@@ -257,3 +266,5 @@ forest(LRR_WUE$LRR,LRR_WUE$LRR_var, slab=LRR_WUE$GENUS, showweights=TRUE)
 ```
 
 ![](Day1_files/figure-markdown_github-ascii_identifiers/forestplot2-1.png)
+
+Note that the next to each effect size is the weight of each point.
