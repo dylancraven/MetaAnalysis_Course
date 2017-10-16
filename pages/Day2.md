@@ -1,3 +1,5 @@
+Hierarchical meta-analytical models
+================
 
 Getting started
 ---------------

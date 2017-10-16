@@ -1,3 +1,5 @@
+Calculating effect sizes
+================
 
 Load packages
 -------------
