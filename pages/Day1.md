@@ -111,7 +111,7 @@ ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) +
 
 ### LRR: water-use efficiency
 
-The log-response ratio is a commonly used effect size and -- once backtransformed -- is easier to understand (e.g. the mean effect size is 10% greater than the control).
+The log-response ratio is a commonly used effect size and -- once back-transformed -- is easier to understand (e.g. the mean effect size is 10% greater than the control).
 
 ``` r
 require(metafor,quietly = TRUE)
