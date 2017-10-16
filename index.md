@@ -29,7 +29,7 @@ updateR()
 update.packages()
 ```
 
-### Course schedule \& exercises  
+### Course schedule & exercises  
 
 Throughout this course we will use data from [NCEAS](https://www.nceas.ucsb.edu/meta/publications.html#d_t_t)  
 You can download the data directly or download using the R code included in the exercises.  
