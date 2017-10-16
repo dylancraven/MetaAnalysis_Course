@@ -4,6 +4,14 @@ Hierarchical meta-analytical models
 Getting started
 ---------------
 
+Load packages
+
+    require(gdata)
+    require(metafor)
+    require(dplyr)
+    require(multcomp)
+    require(ggplot2)
+
 Download data (Curtis et al. 1999)
 
 ``` r
