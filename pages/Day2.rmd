@@ -1,26 +1,204 @@
 ---
-title: "Day 2: Hierarchical meta-analytical models"
+title: "Hierarchical meta-analytical models"
 output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 require(gdata,quietly=TRUE)
+require(metafor)
+require(dplyr)
+require(multcomp)
+require(ggplot2)
 ```
 
-For today's exercises, we'll be using the same data set as yesterday.
+## Getting started   
+
+Load packages 
+
 ```
-require(gdata,quietly=TRUE)
+require(gdata)
+require(metafor)
+require(dplyr)
+require(multcomp)
+require(ggplot2)
+
+```
+
+Download data (Curtis et al. 1999)  
+
+
+```{r dataa, echo=TRUE}
+
 curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+curtis_ES<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+summary(as.factor(curtis_ES$PARAM))
+curtis_WT<-filter(curtis_ES, PARAM=="TOTWT") # let's use whole plant weight because it has the largest number of observations   
 
+curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
 ```
 
 
 ## Part I: compare fixed and random effects models  
 
+### Fixed effects model
+
+**Important** Fixed effects models assume that there is one true effect size, i.e. differences are largely due to sampling error.    
+
+```{r FEmod, echo=TRUE}
+
+fix_wt<-rma(LRR, LRR_var, method="FE", data=curtis_WT)
+
+summary(fix_wt)
+```
+
+This model estimates the 'grand mean' of the effect of CO~2~ exposure on total plant weight. 
 
 
 
-## Part II: fit hierarchical meta-analytical model    
+### Random effects model
+
+**Important** Random effects models allows  the true effect size to differ. Here, the effect sizes represent a random sample from a particular distribution.   
+
+You can use either the 'rma' function, which uses REML as the default method for fitting a model, or 'rma.mv', which
+requires that you specify the random effects.  
+
+Here, we use a random group term for each study ('PAP_NO') because many studies report more than one effect size.
+
+```{r obz , echo=FALSE}
+a<-summarize(group_by(curtis_WT, PAP_NO), obs=length(unique(OBSNO)))
+mean(a$obs)
+```
+
+
+
+```{r REmod, echo=TRUE}
+
+re_wt<-rma.mv(LRR, LRR_var, random=~1|PAP_NO, data=curtis_WT)
+
+summary(re_wt)
+```
+This model also estimates the 'grand mean' of the effect of CO~2~ exposure on total plant weight.  
+
+
+```{r comps, echo=FALSE}
+fix<-cbind("model"="FE","estimate"=fix_wt$b,"lCI"=fix_wt$ci.lb,hCI=fix_wt$ci.ub)
+
+random<-cbind("model"="RE","estimate"=re_wt$b,"lCI"=re_wt$ci.lb,hCI=re_wt$ci.ub)
+
+togg<-rbind.data.frame(fix,random)
+colnames(togg)[2]<-"Estimate"
+
+togg$Estimate<-as.numeric(as.character(togg$Estimate))
+togg$lCI<-as.numeric(as.character(togg$lCI))
+togg$hCI<-as.numeric(as.character(togg$hCI))
+
+
+plott<-ggplot(togg, aes(x=model, y=Estimate, colour=model)) + 
+    geom_hline(yintercept=0,color="red")+
+    geom_errorbar(aes(ymin=lCI, ymax=hCI), width=.1) +
+    geom_point(size=1)+ labs(x="Model", y="Effect size")+
+     guides(fill=FALSE,colour=guide_legend(title="Model type",title.position = "top"))+
+  
+  theme_bw()+theme(axis.text.x=element_text(face="bold"),axis.text.y=element_text(face="bold"))
+plott
+```
+
+
+## Part II: Meta-regression
+
+Now let's fit a hierarchical, multi-level model.  
+
+__Identify most parsimonious random-effects structure__  
+
+I've included additional random effects included in the data set: extra treatment (e.g. nutrient addition, light, water), species identity, and 
+a combination of the two.  
+
+
+
+```{r REmod_re, echo=TRUE}
+
+re_wt1<-rma.mv(LRR, LRR_var, mods=~DIV2,random=~1|PAP_NO, data=curtis_WT)
+
+re_wt2<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT), data=curtis_WT)
+
+re_wt3<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|GEN_SPP), data=curtis_WT)
+
+re_wt4<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT)
+
+AICc<-rbind(mod1=re_wt1$fit.stats$REML[5],mod2=re_wt2$fit.stats$REML[5],mod3=re_wt3$fit.stats$REML[5],mod4=re_wt4$fit.stats$REML[5])
+
+AICc  # and the winner is ... 
+
+```
+
+__Test significance of moderators__  
+
+There are a couple of ways to test the signifance of moderator variables.  
+
+_Likelihood Ratio Tests_  
+
+Note that maximum likelihood is used to fit both models  
+
+```{r sigg, echo=TRUE}
+
+bigg<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT, method="ML")
+small<-rma.mv(LRR, LRR_var, mods=~1,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT, method="ML")
+
+anova(bigg,small)
+```
+
+_Knapp \& Hartung Adjustment_  
+
+The Knapp \& Hartung adjustment, similar to the likelihood ratio test, can be used for individual model coefficients (t-tests) or a group of model coefficients (F tests).  
+
+
+
+```{r blaa, echo=TRUE}
+
+bigg<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT, test="knha")
+
+summary(bigg)
+
+```
+
+In both cases, including plant group as a moderator variable did not add information to the model.  
+
+__Pairwise comparisons__
+
+We will use the 'multcomp' package to test contrasts between levels of the factor 'DIV2'.    
+
+```{r pairz, echo=TRUE}
+require(multcomp)
+
+bigg_int<-rma.mv(LRR, LRR_var, mods=~DIV2-1,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT, test="knha")
+
+summary(bigg_int)
+summary(glht(bigg_int, linfct=rbind(c(-1,1,0), c(-1,0,1), c(0,-1,1))), test=adjusted("none"))
+```
+
+
+
+```{r compz, echo=FALSE}
+
+
+out<-cbind.data.frame("groups"=rownames(bigg_int$b),"estimate"=bigg_int$b,"lCI"=bigg_int$ci.lb,hCI=bigg_int$ci.ub)
+
+colnames(out)[2]<-"Estimate"
+
+out$groups<-as.character(out$groups)
+out$groups<-ifelse(out$groups=="DIV2ANGIO","Angiosperm",out$groups)
+out$groups<-ifelse(out$groups=="DIV2GYMNO","Gymnosperm",out$groups)
+out$groups<-ifelse(out$groups=="DIV2N2FIX","N-fixers",out$groups)
+
+plott2<-ggplot(out, aes(x=groups, y=Estimate, colour=groups)) + 
+    geom_hline(yintercept=0,color="red")+
+    geom_errorbar(aes(ymin=lCI, ymax=hCI), width=.1) +
+    geom_point(size=1)+ labs(x="Plant groups", y="Effect size (LRR)")+
+     guides(fill=FALSE,colour=guide_legend(title="Plant groups",title.position = "top"))+
+  
+  theme_bw()+theme(axis.text.x=element_text(face="bold"),axis.text.y=element_text(face="bold"))
+plott2
+```
 
 
