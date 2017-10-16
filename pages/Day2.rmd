@@ -4,8 +4,23 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+require(gdata,quietly=TRUE)
 ```
 
+For today's exercises, we'll be using the same data set as yesterday.
+```
+require(gdata,quietly=TRUE)
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+
+```
+
+
 ## Part I: compare fixed and random effects models  
+
+
+
+
 ## Part II: fit hierarchical meta-analytical model    
+
+
