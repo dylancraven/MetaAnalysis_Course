@@ -111,7 +111,7 @@ Part II: Meta-regression
 
 Now let's fit a hierarchical, multi-level model.
 
-1.  Identify most parsimonious random-effects structure
+**Identify most parsimonious random-effects structure**
 
 I've included additional random effects included in the data set: extra treatment (e.g. nutrient addition, light, water), species identity, and a combination of the two.
 
@@ -126,7 +126,7 @@ re_wt4<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_S
 
 AICc<-rbind(mod1=re_wt1$fit.stats$REML[5],mod2=re_wt2$fit.stats$REML[5],mod3=re_wt3$fit.stats$REML[5],mod4=re_wt4$fit.stats$REML[5])
 
-AICc  # and the winner is ... model 2
+AICc  # and the winner is ... 
 ```
 
     ##           [,1]
@@ -135,11 +135,11 @@ AICc  # and the winner is ... model 2
     ## mod3  87.97844
     ## mod4  54.58859
 
-1.  Test significance of moderators
+**Test significance of moderators**
 
 There are a couple of ways to test the signifance of moderator variables.
 
-*Likelihoo Ratio Tests*
+*Likelihood Ratio Tests*
 
 Note that maximum likelihood is used to fit both models
 
@@ -195,7 +195,7 @@ summary(bigg)
 
 In both cases, including plant group as a moderator variable did not add information to the model.
 
-*Pairwise comparisons*
+**Pairwise comparisons**
 
 We will use the 'multcomp' package to test contrasts between levels of the factor 'DIV2'.
 
