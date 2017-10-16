@@ -41,7 +41,7 @@ You can download the data directly or download using the R code included in the 
 
 ### Additional resources
 
-General reference for how to implement meta-analysis in R: [metafor's website](http://www.metafor-project.org/doku.php) \& [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/)  
+General reference for how to implement meta-analysis in R: [metafor's website](http://www.metafor-project.org/doku.php) & [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/)  
 
 New R packages for extracting summary data from figures
 [digitize](https://github.com/tpoisot/digitize/)

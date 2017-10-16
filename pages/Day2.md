@@ -1,5 +1,3 @@
-Day 2: Hierarchical meta-analytical models
-================
 
 Getting started
 ---------------

@@ -1,5 +1,3 @@
-Day 1: Calculating effect sizes
-================
 
 Load packages
 -------------
