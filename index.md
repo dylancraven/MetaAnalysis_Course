@@ -5,15 +5,16 @@ title: Exercises for 'Meta-analysis in biological and environmental sciences'
 ---
 
 
-### Before our course  
+### Before our course 
 
-1) Install [R](https://cran.r-project.org/) and [RStudio](https://www.rstudio.com/products/rstudio/download/).  
-2) Install the following packages:
+1) Read a [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/), the principal R package that we will be using in this course.    
+2) Install [R](https://cran.r-project.org/) and [RStudio](https://www.rstudio.com/products/rstudio/download/).  
+3) Install the following packages:
 
 ```
 install.packages(c("metafor","compute.es","ggplot2","dplyr","reshape2","broom","tidyr"),quietly=TRUE)
 ```
-3) If you already have R installed, please update it to the latest version:  
+4) If you already have R installed, please update it to the latest version:  
 
 ```
 
@@ -23,7 +24,7 @@ updateR()
 
 ```
 
-4) Update your packages to the latest version as well:  
+5) Update your packages to the latest version as well:  
 
 ```
 update.packages()
@@ -41,7 +42,7 @@ You can download the data directly or download using the R code included in the 
 
 ### Additional resources
 
-General reference for how to implement meta-analysis in R: [metafor's website](http://www.metafor-project.org/doku.php) & [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/)  
+General reference for how to implement meta-analysis in R: [metafor's website](http://www.metafor-project.org/doku.php) 
 
 New R packages for extracting summary data from figures
 [digitize](https://github.com/tpoisot/digitize/)
