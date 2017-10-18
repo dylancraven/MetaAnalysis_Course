@@ -28,12 +28,7 @@ curtis_WT$GEN_SPP2<-ifelse(curtis_WT$GEN_SPP2=="Populusx euramericana","Populus 
 spp<-unique(as.character(curtis_WT$GEN_SPP2))
 
 spp2 <- TPL(spp, corr = TRUE, repeats=10) # repeats allows you to re-connect to the TPL server
-```
 
-    ## Warning in file(file, "rt"): URL 'http://www.theplantlist.org/tpl1.1/
-    ## search?q=Pinus+banksiana&csv=true': status was 'Couldn't connect to server'
-
-``` r
 spp2$new_species<-paste(spp2$New.Genus, spp2$New.Species,sep="_")
 
 head(spp2)
