@@ -31,7 +31,7 @@ spp2 <- TPL(spp, corr = TRUE, repeats=10) # repeats allows you to re-connect to 
 ```
 
     ## Warning in file(file, "rt"): URL 'http://www.theplantlist.org/tpl1.1/
-    ## search?q=Betula+pendula&csv=true': status was 'Couldn't connect to server'
+    ## search?q=Pinus+banksiana&csv=true': status was 'Couldn't connect to server'
 
 ``` r
 spp2$new_species<-paste(spp2$New.Genus, spp2$New.Species,sep="_")
@@ -101,6 +101,12 @@ local_tree <- congeneric.merge(phy,spp2$new_species,split="_")
 ``` r
 local_tree <- drop.tip(local_tree, setdiff(local_tree$tip.label, spp2$new_species))
 
+length(unique(local_tree$tip.label))
+```
+
+    ## [1] 35
+
+``` r
 plot(local_tree, type="fan")
 ```
 
