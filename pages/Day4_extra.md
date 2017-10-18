@@ -17,6 +17,7 @@ Build a phylogeny
 Species names are taxonomically resolved using [The Plant List](http://www.theplantlist.org/)
 
 ``` r
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
 curtis_WT$GENUS<-tolower(as.character(curtis_WT$GENUS))
 curtis_WT$GENUS<-paste(toupper(substr(curtis_WT$GENUS, 1, 1)), substr(curtis_WT$GENUS, 2, nchar(curtis_WT$GENUS)), sep="")
 
@@ -28,13 +29,7 @@ curtis_WT$GEN_SPP2<-ifelse(curtis_WT$GEN_SPP2=="Populusx euramericana","Populus 
 spp<-unique(as.character(curtis_WT$GEN_SPP2))
 
 spp2 <- TPL(spp, corr = TRUE, repeats=10) # repeats allows you to re-connect to the TPL server
-```
 
-    ## Warning in file(file, "rt"): URL 'http://www.theplantlist.org/tpl1.1/
-    ## search?q=Populus+euramericana&csv=true': status was 'Couldn't connect to
-    ## server'
-
-``` r
 spp2$new_species<-paste(spp2$New.Genus, spp2$New.Species,sep="_")
 
 length(unique(spp2$new_species)) #number of unique species identified via TPL
@@ -49,13 +44,14 @@ length(spp) #number of unique species according to the data set
     ## [1] 37
 
 ``` r
-write.csv(spp2,"/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/TPL_sppnames.csv",row.names=F)
+write.csv(spp2,"TPL_sppnames.csv",row.names=F)
 ```
 
 Build phylogeny using an [updated version](https://academic.oup.com/jpe/article/9/2/233/2928108/An-updated-megaphylogeny-of-plants-a-tool-for) of the Zanne et al. [2013](http://datadryad.org/resource/doi:10.5061/dryad.63q27)
 
 ``` r
-phy<-read.tree("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/PhytoPhylo.tre")
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+phy<-read.tree("PhytoPhylo.tre")
 
 local_tree <- congeneric.merge(phy,spp2$new_species,split="_")
 ```
@@ -79,7 +75,7 @@ plot(local_tree, type="fan",cex=0.8)
 ![](Day4_extra_files/figure-markdown_github-ascii_identifiers/phyloo-1.png)
 
 ``` r
-write.tree(local_tree, "/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/Curtis_phylogeny.tre")
+write.tree(local_tree, "Curtis_phylogeny.tre")
 ```
 
 Note that the pruned phylogeny has 35 unique species.
