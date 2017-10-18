@@ -91,5 +91,122 @@ forest.cumul.rma(cum_re)
 Controlling for shared evolutionary history (phylogeny)
 -------------------------------------------------------
 
-add pez, ade4 (?), upload phylogeny to files
-============================================
+**Load phylogeny**
+
+If you're interested in how to build a phylogeny, here's the [code](pages/Day4_extra.html)
+
+``` r
+clean<-read.csv("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/TPL_sppnames.csv")
+clean<-dplyr::select(clean,GEN_SPP2=Taxon, phy=new_species)
+clean$GEN_SPP2<-as.character(clean$GEN_SPP2)
+
+curtis_WT$GENUS<-tolower(as.character(curtis_WT$GENUS))
+curtis_WT$GENUS<-paste(toupper(substr(curtis_WT$GENUS, 1, 1)), substr(curtis_WT$GENUS, 2, nchar(curtis_WT$GENUS)), sep="")
+
+curtis_WT$SPECIES<-tolower(as.character(curtis_WT$SPECIES))
+curtis_WT$GEN_SPP2<-as.character(paste(curtis_WT$GENUS, curtis_WT$SPECIES,sep=" "))
+
+curtis_WT$GEN_SPP2<-ifelse(curtis_WT$GEN_SPP2=="Populusx euramericana","Populus × euramericana",curtis_WT$GEN_SPP2)
+
+curtis_WT<-dplyr::left_join(curtis_WT,clean, by="GEN_SPP2")
+
+# read in tree
+
+tree<-read.tree("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/Curtis_phylogeny.tre")
+str(tree)
+```
+
+    ## List of 5
+    ##  $ edge       : int [1:68, 1:2] 36 37 37 38 39 39 40 40 38 41 ...
+    ##  $ Nnode      : int 34
+    ##  $ tip.label  : chr [1:35] "Pseudotsuga_menziesii" "Picea_glauca" "Picea_mariana" "Picea_abies" ...
+    ##  $ edge.length: num [1:68] 144.6 207.6 23.1 100.8 83.7 ...
+    ##  $ node.label : chr [1:34] "Spermatophyta" "" "" "" ...
+    ##  - attr(*, "class")= chr "phylo"
+    ##  - attr(*, "order")= chr "cladewise"
+
+``` r
+# we need to drop one species from our data frame ('Trichospermum mexicanum' because it wasn't placed on the phylogeny)
+
+
+curtis_WTT<-filter(curtis_WT, phy!="Trichospermum_mexicanum")
+
+length(unique(curtis_WTT$phy))
+```
+
+    ## [1] 35
+
+``` r
+#same number of species on phylogeny as in data set?
+
+length(unique(curtis_WTT$phy))==length(unique(tree$tip.label))
+```
+
+    ## [1] TRUE
+
+**Fit multi-level meta-analytical model that accounts for shared phylogenetic history**
+
+1.  Make a phylogenetic correlation matrix
+2.  Fit model such that there is a random term for species, which is then matched to a correlation matrix ('R')
+3.  Compare it to a model that doesn't account for phylogeny
+
+``` r
+tree_m<-vcv.phylo(tree, cor=TRUE) # creates phylogenetic correlation matrix
+
+re_phy<-rma.mv(LRR, LRR_var, mods=~1,random=list(~1|PAP_NO, ~1|XTRT, ~1|phy), R=list(phy=tree_m), data=curtis_WTT)
+summary(re_phy)
+```
+
+    ## 
+    ## Multivariate Meta-Analysis Model (k = 101; method: REML)
+    ## 
+    ##   logLik  Deviance       AIC       BIC      AICc  
+    ## -22.7040   45.4080   53.4080   63.8287   53.8291  
+    ## 
+    ## Variance Components: 
+    ## 
+    ##             estim    sqrt  nlvls  fixed  factor    R
+    ## sigma^2.1  0.0124  0.1115     29     no  PAP_NO   no
+    ## sigma^2.2  0.0080  0.0895      8     no    XTRT   no
+    ## sigma^2.3  0.0088  0.0936     35     no     phy  yes
+    ## 
+    ## Test for Heterogeneity: 
+    ## Q(df = 100) = 768.9932, p-val < .0001
+    ## 
+    ## Model Results:
+    ## 
+    ## estimate      se    zval    pval   ci.lb   ci.ub     
+    ##   0.2745  0.0693  3.9597  <.0001  0.1386  0.4103  ***
+    ## 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+#
+re_nophy<-rma.mv(LRR, LRR_var, mods=~1,random=list(~1|PAP_NO, ~1|XTRT, ~1|phy), data=curtis_WTT)
+summary(re_nophy)
+```
+
+    ## 
+    ## Multivariate Meta-Analysis Model (k = 101; method: REML)
+    ## 
+    ##   logLik  Deviance       AIC       BIC      AICc  
+    ## -20.4116   40.8232   48.8232   59.2439   49.2443  
+    ## 
+    ## Variance Components: 
+    ## 
+    ##             estim    sqrt  nlvls  fixed  factor
+    ## sigma^2.1  0.0087  0.0933     29     no  PAP_NO
+    ## sigma^2.2  0.0094  0.0969      8     no    XTRT
+    ## sigma^2.3  0.0042  0.0645     35     no     phy
+    ## 
+    ## Test for Heterogeneity: 
+    ## Q(df = 100) = 768.9932, p-val < .0001
+    ## 
+    ## Model Results:
+    ## 
+    ## estimate      se    zval    pval   ci.lb   ci.ub     
+    ##   0.2742  0.0455  6.0271  <.0001  0.1850  0.3634  ***
+    ## 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
