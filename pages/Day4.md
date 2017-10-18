@@ -91,8 +91,5 @@ forest.cumul.rma(cum_re)
 Controlling for shared evolutionary history (phylogeny)
 -------------------------------------------------------
 
-add pez, ade4 (?)
-=================
-
-upload phylogeny to files
-=========================
+add pez, ade4 (?), upload phylogeny to files
+============================================
