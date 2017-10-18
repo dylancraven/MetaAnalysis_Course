@@ -1,4 +1,4 @@
-Assumptions, biases, and confounding effects
+Assumptions and biases
 ================
 
 Getting started

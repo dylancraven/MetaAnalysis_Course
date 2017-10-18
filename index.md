@@ -7,7 +7,7 @@ title: Exercises for 'Meta-analysis in biological and environmental sciences'
 
 ### Before our course 
 
-1) Read a [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/), the principal R package that we will be using in this course.    
+1) Read a [general overview of 'metafor'](http://www.jstatsoft.org/v36/i03/), the principal R package that we will be during this course.    
 2) Install [R](https://cran.r-project.org/) and [RStudio](https://www.rstudio.com/products/rstudio/download/).  
 3) Install the following packages:
 

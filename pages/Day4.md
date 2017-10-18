@@ -50,7 +50,9 @@ head(curtis_ESS)
     ## 6  0.81  0.01       8     1.13  0.20
 
 ``` r
-r_z<-ggplot(curtis_ESS, aes(x=r, y=fisher.z))+geom_point() +theme_bw()
+r_z<-ggplot(curtis_ESS, aes(x=r, y=fisher.z))+geom_point() +
+  
+    geom_abline(intercept = 0, slope = 1,colour="red")+theme_bw()
 
 r_z
 ```
@@ -59,11 +61,11 @@ r_z
 
 ``` r
 hist_r<-ggplot(curtis_ESS, aes(r)) +
-  geom_histogram(binwidth = 0.05)+theme_bw()
+  geom_density(colour="red")+xlab("r")+theme_bw()
 
 
 hist_z<-ggplot(curtis_ESS, aes(fisher.z)) +
-  geom_histogram(binwidth = 0.05)+theme_bw()
+  geom_density(color="blue")+xlab("Fisher's Z")+theme_bw()
 
 ab<-plot_grid(hist_r, hist_z, ncol=2)
 ab
@@ -88,3 +90,9 @@ forest.cumul.rma(cum_re)
 
 Controlling for shared evolutionary history (phylogeny)
 -------------------------------------------------------
+
+add pez, ade4 (?)
+=================
+
+upload phylogeny to files
+=========================
