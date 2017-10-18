@@ -4,15 +4,15 @@ Assumptions, biases, and confounding effects
 Getting started
 ---------------
 
-Load packages
+We'll continue using the same data and model from previous days.
+
+*Load packages*
 
     require(gdata)
     require(metafor)
     require(dplyr)
-    require(multcomp)
-    require(ggplot2)
 
-Download data (Curtis et al. 1999)
+*Download data (Curtis et al. 1999)*
 
 ``` r
 curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
@@ -57,12 +57,12 @@ curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Assess model assumptions: homogeneity of variance and normality of residuals
-----------------------------------------------------------------------------
+Assess model assumptions: homogeneity of variance and normality
+---------------------------------------------------------------
 
 **Profile likelihood plots**
 
-These plots let us know if model parameters are 'identifiable'. If they are identifiable, they peak at their estimates. If they are not, they may be flat which indicates that the model does not converge or is overparameterized.
+These plots let us know if model parameters are 'identifiable'. If they are identifiable, they peak at their estimates. If they are not, they may be flat which indicates that the model does not converge or is overparameterized. This is a fancy way of sayin that model estimates will be more reliable with a simpler random effects structure.
 
     ## Profiling sigma2 = 1 
     ## 
@@ -234,8 +234,24 @@ abline(h =0)
 
 ![](Day3_files/figure-markdown_github-ascii_identifiers/resids2-1.png)
 
+**Influential points or outliers**
+
+*Cook's distance*
+
+This plot helps you find outliers and influential points.
+
+``` r
+plot(cooks.distance(re_wt4))
+```
+
+![](Day3_files/figure-markdown_github-ascii_identifiers/cookk-1.png)
+
 Publication bias
 ----------------
+
+There are two main ways of detecting publication bias:
+1) by testing if effect sizes are unusually high (i.e. asymmetric) or
+2) estimating the number of studies needed to change the signficance of a mean effect size.
 
 **Funnel plot**
 
@@ -287,13 +303,75 @@ Egger's regression tests for funnel plot asymmetry. One can use a number of mode
 
 *Note that there is a function in metafor ('regtest') for more simple models.*
 
-**Cook's distance**
+**Fail-safe number**
 
-This plot helps you find outliers and influential points.
+How many studies (or observations) would be needed to make the mean effect size effectively zero?
 
-    ```r
-      cd<-cooks.distance(re_wt4)
-       plot(cd)
-    ```
+Note that the 'Rosenberg' and 'Rosenthal' methods estimates *weighted* effect sizes, while the 'Orwin' method estimates *unweighted* effect sizes. This methodological difference explains the contrasting magnitudes of the estimated fail-safe numbers.
 
-    ![](Day3_files/figure-markdown_github-ascii_identifiers/cookk-1.png)
+``` r
+fsn(LRR, LRR_var, data=curtis_WT,type="Rosenberg")
+```
+
+    ## 
+    ## Fail-safe N Calculation Using the Rosenberg Approach 
+    ## 
+    ## Average Effect Size:         0.2088 
+    ## Observed Significance Level: <.0001 
+    ## Target Significance Level:   0.05 
+    ## 
+    ## Fail-safe N: 38924
+
+``` r
+fsn(LRR, LRR_var, data=curtis_WT,type="Rosenthal")
+```
+
+    ## 
+    ## Fail-safe N Calculation Using the Rosenthal Approach 
+    ## 
+    ## Observed Significance Level: <.0001 
+    ## Target Significance Level:   0.05 
+    ## 
+    ## Fail-safe N: 36162
+
+``` r
+fsn(LRR, LRR_var, data=curtis_WT,type="Orwin")
+```
+
+    ## 
+    ## Fail-safe N Calculation Using the Orwin Approach 
+    ## 
+    ## Average Effect Size: 0.2844 
+    ## Target Effect Size:  0.1422 
+    ## 
+    ## Fail-safe N: 102
+
+**Trim & fill**
+
+Trim & fill is a method to estimate the missing number of studies, possibly due to biases (publication or others) that omit or exclude the inclusion of extreme results. Doing so makes the funnel plot more symmetric.
+
+Trim & fill is not currently implemented for 'rma.mv' objects, but can be done easily for either fixed or random effect models.
+
+``` r
+ree<-rma(LRR, LRR_var, data=curtis_WT)
+
+taf <- trimfill(ree)
+
+taf$k0 #number of studies to add
+```
+
+    ## [1] 13
+
+``` r
+taf$side #which side should they be added to?
+```
+
+    ## [1] "left"
+
+``` r
+funnel(taf)
+```
+
+![](Day3_files/figure-markdown_github-ascii_identifiers/trim-1.png)
+
+Note that points in *white* are those added by the trim-and-fill analysis.

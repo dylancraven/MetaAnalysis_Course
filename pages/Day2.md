@@ -4,7 +4,7 @@ Hierarchical meta-analytical models
 Getting started
 ---------------
 
-Load packages
+*Load packages*
 
     require(gdata)
     require(metafor)
@@ -12,7 +12,7 @@ Load packages
     require(multcomp)
     require(ggplot2)
 
-Download data (Curtis et al. 1999)
+*Download data (Curtis et al. 1999)*
 
 ``` r
 curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
@@ -74,7 +74,8 @@ This model estimates the 'grand mean' of the effect of CO<sub>2</sub> exposure o
 
 ### Random effects model
 
-**Important** Random effects models allows the true effect size to differ. Here, the effect sizes represent a random sample from a particular distribution.
+**Important** Random effects models allows the true effect size to differ.
+Here, the effect sizes represent a random sample from a particular distribution.
 
 You can use either the 'rma' function, which uses REML as the default method for fitting a model, or 'rma.mv', which requires that you specify the random effects.
 
@@ -114,10 +115,37 @@ This model also estimates the 'grand mean' of the effect of CO<sub>2</sub> expos
 
 ![](Day2_files/figure-markdown_github-ascii_identifiers/comps-1.png)
 
-Part II: Meta-regression
-------------------------
+**Comparison of model heterogeneity**
 
-Now let's fit a hierarchical, multi-level model.
+Note that *I<sup>2</sup>* for the random effects model integrates heterogeneity from within- and between-clusters following Nakagawa & Santos (2012).
+
+See [here](http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate) to calculate *I<sup>2</sup>* for between- and within-clusters of multilevel models separately.
+
+``` r
+I2_fe<-cbind.data.frame("model"="fixed","I2"=fix_wt$I2) 
+
+#######################################
+# calcualte I2 for a multilevel model #
+#######################################
+W <- diag(1/curtis_WT$LRR_var)
+X <- model.matrix(re_wt)
+P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+re_I2<-100 * sum(re_wt$sigma2) / (sum(re_wt$sigma2) + (re_wt$k-re_wt$p)/sum(diag(P)))
+
+I2_re<-cbind.data.frame("model"="random","I2"=re_I2)
+
+#######################################
+
+I22<-rbind.data.frame(I2_fe,I2_re)
+I22
+```
+
+    ##    model       I2
+    ## 1  fixed 86.86638
+    ## 2 random 81.76727
+
+Part II: Hierarchical, multi-level model ('meta-regression')
+------------------------------------------------------------
 
 **Identify most parsimonious random-effects structure**
 
@@ -202,6 +230,19 @@ summary(bigg)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 In both cases, including plant group as a moderator variable did not add information to the model.
+
+*Model Heterogeneity (I<sup>2</sup>)*
+
+``` r
+W <- diag(1/curtis_WT$LRR_var)
+X <- model.matrix(bigg)
+P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+100 * sum(bigg$sigma2) / (sum(bigg$sigma2) + (bigg$k-bigg$p)/sum(diag(P)))
+```
+
+    ## [1] 86.99147
+
+Note that the *I<sup>2</sup>* for this model is very similar to that of the fixed effects model and the random effects model with a simpler random effects structure (seen earlier).
 
 **Pairwise comparisons**
 
