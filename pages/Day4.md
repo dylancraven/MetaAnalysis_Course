@@ -14,10 +14,25 @@ We'll continue using the same data from previous days.
     require(compute.es)
     require(ggplot2)
     require(cowplot)
+    require(pez)
+    require(phytools)
+    require(ape)
 
 *Download data (Curtis et al. 1999)*
 
+``` r
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+curtis_ES<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+```
+
     ## Warning in log(m1i/m2i): NaNs produced
+
+``` r
+#summary(as.factor(curtis_ES$PARAM))
+curtis_WT<-filter(curtis_ES, PARAM=="TOTWT") # let's use whole plant weight because it has the largest number of observations   
+
+curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
+```
 
 Conversion among effect sizes
 -----------------------------
@@ -76,7 +91,7 @@ ab
 Cumulative meta-analysis
 ------------------------
 
-This method tests whether effect sizes have shifted over time.
+This method tests whether effect sizes have shifted over time. It fits the model by iteratively adding observations in the order that we designate.
 
 ``` r
 re_wt<-rma(LRR, LRR_var, data=curtis_WT)
@@ -91,9 +106,15 @@ forest.cumul.rma(cum_re)
 Controlling for shared evolutionary history (phylogeny)
 -------------------------------------------------------
 
-**Load phylogeny**
+For species-level analyses, shared evolutionary history should be controlled for above and beyond random effect terms already included.
 
-If you're interested in how to build a phylogeny, here's the [code](pages/Day4_extra.html)
+**Clean data set**
+
+The basic steps are:
+
+1.  Resolve taxonomic names to ensure that as many as possible can be placed on a phylogeny.
+2.  Build phylogeny. If you're interested in how to build a phylogeny, here's the [code](https://dylancraven.github.io/MetaAnalysis_Course/pages/Day4_extra.html)
+3.  Make sure that your phylogeny has the same number of tip labels as there are species in the data set.
 
 ``` r
 clean<-read.csv("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/TPL_sppnames.csv")
@@ -127,7 +148,6 @@ str(tree)
 
 ``` r
 # we need to drop one species from our data frame ('Trichospermum mexicanum' because it wasn't placed on the phylogeny)
-
 
 curtis_WTT<-filter(curtis_WT, phy!="Trichospermum_mexicanum")
 
@@ -210,3 +230,5 @@ summary(re_nophy)
     ## 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Accountring for phylogeny, in this particular case, did not alter the mean effect size. However, the confidence intervals around the mean effect size are wider when accounting for phylogeny.
