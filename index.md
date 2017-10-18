@@ -37,8 +37,8 @@ You can download the data directly or download using the R code included in the 
 
 [Day 1: Calculating effect sizes](pages/Day1.html)  
 [Day 2: Hierarchical meta-analytical models](pages/Day2.html)  
-[Day 3: Assumptions, biases and confounding effects](pages/Day3.html)  
-[Day 4: Methodological issues, advances, and common mistakes](pages/Day4.html)  
+[Day 3: Assumptions and biases](pages/Day3.html)  
+[Day 4: Confounding effects and extra tricks](pages/Day4.html)  
 
 ### Additional resources
 
