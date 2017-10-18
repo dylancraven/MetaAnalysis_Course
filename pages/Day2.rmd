@@ -14,7 +14,7 @@ require(ggplot2)
 
 ## Getting started   
 
-Load packages 
+_Load packages_ 
 
 ```
 require(gdata)
@@ -25,7 +25,7 @@ require(ggplot2)
 
 ```
 
-Download data (Curtis et al. 1999)  
+_Download data (Curtis et al. 1999)_    
 
 
 ```{r dataa, echo=TRUE}
@@ -43,7 +43,7 @@ curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
 
 ### Fixed effects model
 
-**Important** Fixed effects models assume that there is one true effect size, i.e. differences are largely due to sampling error.    
+**Important** Fixed effects models assume that there is one true effect size, i.e. differences are largely due to sampling error.      
 
 ```{r FEmod, echo=TRUE}
 
@@ -58,7 +58,8 @@ This model estimates the 'grand mean' of the effect of CO~2~ exposure on total p
 
 ### Random effects model
 
-**Important** Random effects models allows  the true effect size to differ. Here, the effect sizes represent a random sample from a particular distribution.   
+**Important** Random effects models allows the true effect size to differ.  
+Here, the effect sizes represent a random sample from a particular distribution.   
 
 You can use either the 'rma' function, which uses REML as the default method for fitting a model, or 'rma.mv', which
 requires that you specify the random effects.  
@@ -67,7 +68,7 @@ Here, we use a random group term for each study ('PAP_NO') because many studies 
 
 ```{r obz , echo=FALSE}
 a<-summarize(group_by(curtis_WT, PAP_NO), obs=length(unique(OBSNO)))
-mean(a$obs)
+mean(a$obs) # mean number of observations per study  
 ```
 
 
@@ -103,11 +104,37 @@ plott<-ggplot(togg, aes(x=model, y=Estimate, colour=model)) +
   theme_bw()+theme(axis.text.x=element_text(face="bold"),axis.text.y=element_text(face="bold"))
 plott
 ```
+ 
+__Comparison of model heterogeneity__
 
 
-## Part II: Meta-regression
+Note that _I^2^_ for the random effects model integrates heterogeneity from within- and between-clusters following Nakagawa & Santos (2012).  
 
-Now let's fit a hierarchical, multi-level model.  
+See [here](http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate) to calculate _I^2^_ for between- and within-clusters of multilevel models separately.  
+```{r i2, echo=TRUE}
+
+I2_fe<-cbind.data.frame("model"="fixed","I2"=fix_wt$I2) 
+
+#######################################
+# calcualte I2 for a multilevel model #
+#######################################
+W <- diag(1/curtis_WT$LRR_var)
+X <- model.matrix(re_wt)
+P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+re_I2<-100 * sum(re_wt$sigma2) / (sum(re_wt$sigma2) + (re_wt$k-re_wt$p)/sum(diag(P)))
+
+I2_re<-cbind.data.frame("model"="random","I2"=re_I2)
+
+#######################################
+
+I22<-rbind.data.frame(I2_fe,I2_re)
+I22
+```
+
+
+
+## Part II: Hierarchical, multi-level model ('meta-regression')  
+
 
 __Identify most parsimonious random-effects structure__  
 
@@ -164,6 +191,21 @@ summary(bigg)
 
 In both cases, including plant group as a moderator variable did not add information to the model.  
 
+
+_Model Heterogeneity (I^2^)_ 
+
+
+```{r I22, echo=TRUE}
+
+W <- diag(1/curtis_WT$LRR_var)
+X <- model.matrix(bigg)
+P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+100 * sum(bigg$sigma2) / (sum(bigg$sigma2) + (bigg$k-bigg$p)/sum(diag(P)))
+
+```
+
+Note that the _I^2^_ for this model is very similar to that of the fixed effects model and the random effects model with a simpler random effects structure (seen earlier).  
+
 __Pairwise comparisons__
 
 We will use the 'multcomp' package to test contrasts between levels of the factor 'DIV2'.    
@@ -176,7 +218,6 @@ bigg_int<-rma.mv(LRR, LRR_var, mods=~DIV2-1,random=list(~1|PAP_NO, ~1|XTRT, ~1|G
 summary(bigg_int)
 summary(glht(bigg_int, linfct=rbind(c(-1,1,0), c(-1,0,1), c(0,-1,1))), test=adjusted("none"))
 ```
-
 
 
 ```{r compz, echo=FALSE}

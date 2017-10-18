@@ -117,7 +117,8 @@ The basic steps are:
 3.  Make sure that your phylogeny has the same number of tip labels as there are species in the data set.
 
 ``` r
-clean<-read.csv("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/TPL_sppnames.csv")
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+clean<-read.csv("TPL_sppnames.csv")
 clean<-dplyr::select(clean,GEN_SPP2=Taxon, phy=new_species)
 clean$GEN_SPP2<-as.character(clean$GEN_SPP2)
 
@@ -133,7 +134,7 @@ curtis_WT<-dplyr::left_join(curtis_WT,clean, by="GEN_SPP2")
 
 # read in tree
 
-tree<-read.tree("/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/Curtis_phylogeny.tre")
+tree<-read.tree("Curtis_phylogeny.tre")
 str(tree)
 ```
 
