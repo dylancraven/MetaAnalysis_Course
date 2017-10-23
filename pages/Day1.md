@@ -51,8 +51,12 @@ str(curtis)
     ##  $ CV._ELEV: num  46.7 13.4 27.7 28.8 36 ...
     ##  $ N_ELEV  : int  5 5 3 5 3 5 3 5 3 5 ...
 
-Calculate effect sizes
-----------------------
+Please note that you may have to specify the location of the 'perl interpreter', e.g.
+
+    perl<-"http://www.nceas.ucsb.edu/meta/Curtis"
+    curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1,perl=perl)
+
+### Calculate effect sizes
 
 For the Curtis data set, the response variables are all measured on a continuous scale. This allows us to calculate a number of traditional effect sizes, including Hedge's D and the log-response ratio. In 'metafor' these effect sizes are referred to as 'SMD' and 'ROM', respectively.
 
