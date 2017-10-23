@@ -12,14 +12,14 @@ title: Exercises for 'Meta-analysis in biological and environmental sciences'
 3) Install the following packages:
 
 ```
-install.packages(c("metafor","compute.es","ggplot2","dplyr","reshape2","broom","tidyr"),quietly=TRUE)
+install.packages(c("metafor","compute.es","ggplot2","dplyr","reshape2","broom","tidyr"))
 ```
 4) If you already have R installed, please update it to the latest version:  
 
 ```
 
 install.packages('installr')
-
+require('installr')
 updateR()
 
 ```
