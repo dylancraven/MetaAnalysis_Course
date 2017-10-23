@@ -182,4 +182,4 @@ Note that the percentage next to each effect size is the weight of each point.
 
 **QUESTION: Do trees have higher or lower water-use efficiency in response to elevated CO<sub>2</sub>?**
 
-### Exercise: calculate effect sizes and create forest plots using the [Stewart et al. bird abundance dataset](https://www.dropbox.com/s/rdv7cj11dh9s38x/borenstein2010.pdf?dl=0)
+### Exercise: calculate effect sizes and create forest plots using the Stewart et al. bird abundance dataset [here](https://www.dropbox.com/s/yxjlwvvy4eg9uuw/Stewart-2005.pdf?dl=0) and [here](https://www.dropbox.com/s/j1lxvu1f4gtnotv/Stewart_et_al_2007.pdf?dl=0)
