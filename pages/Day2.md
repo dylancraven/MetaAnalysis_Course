@@ -303,3 +303,12 @@ summary(glht(bigg_int, linfct=rbind(c(-1,1,0), c(-1,0,1), c(0,-1,1))), test=adju
     ## (Adjusted p values reported -- none method)
 
 ![](Day2_files/figure-markdown_github-ascii_identifiers/compz-1.png)
+
+Exercise: download data from our Github repository and fit a multi-level model, calculate I<sup>2</sup>, and test for multiple comparisons.
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+    install.packages('RCurl')
+
+    require(RCurl)
+    landuse <- getURL("https://raw.githubusercontent.com/dylancraven/MetaAnalysis_Course/gh-pages/Slides/LandUseBiodiv.csv")
+    landuse <- read.csv(text = landuse,header=T)
