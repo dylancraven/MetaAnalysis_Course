@@ -1,0 +1,190 @@
+---
+title: "Confounding effects and extra tricks"
+output: github_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(gdata,quietly=TRUE)
+require(metafor)
+require(dplyr)
+#require(multcomp)
+require(ggplot2)
+require(compute.es,quietly=TRUE)
+require(cowplot)
+require(pez,quietly=TRUE)
+require(phytools,quietly=TRUE)
+require(ape)
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+```
+
+
+## Getting started   
+
+We'll continue using the same data from previous days.  
+
+_Load packages_ 
+
+```
+require(gdata)
+require(metafor)
+require(dplyr)
+require(compute.es)
+require(ggplot2)
+require(cowplot)
+require(pez)
+require(phytools)
+require(ape)
+```
+
+_Download data (Curtis et al. 1999)_    
+
+
+```{r dataa, echo=TRUE}
+
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+curtis_ES<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+#summary(as.factor(curtis_ES$PARAM))
+curtis_WT<-filter(curtis_ES, PARAM=="TOTWT") # let's use whole plant weight because it has the largest number of observations   
+
+curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
+```
+
+
+## Conversion among effect sizes  
+
+'Compute.es' is a powerful package that converts effect sizes.
+
+The main function for calculating effect sizes is _mes_ and  _des_ ,and _res_ convert among effect sizes.  
+
+Here, we will first calculate basic effect sizes using _mes_ and then convert the effect size _r_ to Fisher's _z_
+
+
+```{r hedgez, echo=TRUE}
+# calculate effect sizes
+curtis_ES<-mes(m.2=curtis_WT$X_AMB, m.1=curtis_WT$X_ELEV, sd.2=curtis_WT$SD_AMB, sd.1=curtis_WT$SD_ELEV, n.2=curtis_WT$N_AMB, n.1=curtis_WT$N_ELEV ,verbose=FALSE)
+
+
+# convert correlation coefficient to fisher's z  
+new_ES<-res(r=curtis_ES$r,var.r=curtis_ES$var.r, n=curtis_ES$N.total,verbose=FALSE)
+
+curtis_ESS<-dplyr::select(new_ES, r, var.r, N.total, fisher.z, var.z)
+
+head(curtis_ESS)
+
+r_z<-ggplot(curtis_ESS, aes(x=r, y=fisher.z))+geom_point() +
+  
+    geom_abline(intercept = 0, slope = 1,colour="red")+theme_bw()
+
+r_z
+```
+
+
+```{r r_fish, echo=TRUE}
+
+hist_r<-ggplot(curtis_ESS, aes(r)) +
+  geom_density(colour="red")+xlab("r")+theme_bw()
+
+
+hist_z<-ggplot(curtis_ESS, aes(fisher.z)) +
+  geom_density(color="blue")+xlab("Fisher's Z")+theme_bw()
+
+ab<-plot_grid(hist_r, hist_z, ncol=2)
+ab
+```
+
+
+## Cumulative meta-analysis  
+
+This method tests whether effect sizes have shifted over time. It fits the model by iteratively adding observations in the order that we designate.  
+
+
+```{r model, echo=TRUE}
+
+re_wt<-rma(LRR, LRR_var, data=curtis_WT)
+
+cum_re<-cumul(re_wt, order(curtis_WT$OBSNO))
+
+forest.cumul.rma(cum_re)
+```
+
+
+## Controlling for shared evolutionary history (phylogeny)  
+
+For species-level analyses, shared evolutionary history should be controlled for above and beyond random effect terms already included.  
+
+__Clean data set__
+
+The basic steps are:  
+
+1) Resolve taxonomic names to ensure that as many as possible can be placed on a phylogeny.  
+2) Build phylogeny. If you're interested in how to build a phylogeny, here's the [code](https://dylancraven.github.io/MetaAnalysis_Course/pages/Day4_extra.html)   
+3) Make sure that your phylogeny has the same number of tip labels as there are species in the data set.  
+
+
+
+```{r merge, echo=TRUE}
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+clean<-read.csv("TPL_sppnames.csv")
+clean<-dplyr::select(clean,GEN_SPP2=Taxon, phy=new_species)
+clean$GEN_SPP2<-as.character(clean$GEN_SPP2)
+
+curtis_WT$GENUS<-tolower(as.character(curtis_WT$GENUS))
+curtis_WT$GENUS<-paste(toupper(substr(curtis_WT$GENUS, 1, 1)), substr(curtis_WT$GENUS, 2, nchar(curtis_WT$GENUS)), sep="")
+
+curtis_WT$SPECIES<-tolower(as.character(curtis_WT$SPECIES))
+curtis_WT$GEN_SPP2<-as.character(paste(curtis_WT$GENUS, curtis_WT$SPECIES,sep=" "))
+
+curtis_WT$GEN_SPP2<-ifelse(curtis_WT$GEN_SPP2=="Populusx euramericana","Populus × euramericana",curtis_WT$GEN_SPP2)
+
+curtis_WT<-dplyr::left_join(curtis_WT,clean, by="GEN_SPP2")
+
+# read in tree
+
+tree<-read.tree("Curtis_phylogeny.tre")
+str(tree)
+
+# we need to drop one species from our data frame ('Trichospermum mexicanum' because it wasn't placed on the phylogeny)
+
+curtis_WTT<-filter(curtis_WT, phy!="Trichospermum_mexicanum")
+
+length(unique(curtis_WTT$phy))
+
+#same number of species on phylogeny as in data set?
+
+length(unique(curtis_WTT$phy))==length(unique(tree$tip.label))
+
+```
+
+__Fit multi-level meta-analytical model that accounts for shared phylogenetic history__ 
+
+
+1) Make a phylogenetic correlation matrix  
+2) Fit model such that there is a random term for species, which is then matched to a correlation matrix ('R')
+3) Compare it to a model that doesn't account for phylogeny  
+
+```{r phylo2, echo=TRUE}
+
+tree_m<-vcv.phylo(tree, cor=TRUE) # creates phylogenetic correlation matrix
+
+re_phy<-rma.mv(LRR, LRR_var, mods=~1,random=list(~1|PAP_NO, ~1|XTRT, ~1|phy), R=list(phy=tree_m), data=curtis_WTT)
+summary(re_phy)
+
+#
+re_nophy<-rma.mv(LRR, LRR_var, mods=~1,random=list(~1|PAP_NO, ~1|XTRT, ~1|phy), data=curtis_WTT)
+summary(re_nophy)
+```
+
+Accountring for phylogeny, in this particular case, did not alter the mean effect size. However, the confidence intervals around the mean effect size are wider when accounting for phylogeny.  
+
+
+### Exercise: do your own meta-analysis (using either Gibson et al. or another data set of your own choosing)   
+
+
+#Tasks#  
+
+1. Download data from [Gibson et al.](http://www.nature.com/nature/journal/v478/n7369/abs/nature10425.html#supplementary-information)  
+2. Calculate effect sizes  
+2. Fit multi-levelr andom effects model  
+3. Make visualisations of your results (effect sizes, forest plot, etc.)  

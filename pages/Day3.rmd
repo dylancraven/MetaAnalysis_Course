@@ -1,0 +1,169 @@
+---
+title: "Assumptions and biases"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(gdata,quietly=TRUE)
+require(metafor)
+require(dplyr)
+```
+
+## Getting started   
+
+We'll continue using the same data and model from previous days.  
+
+_Load packages_ 
+
+```
+require(gdata)
+require(metafor)
+require(dplyr)
+
+```
+
+_Download data (Curtis et al. 1999)_    
+
+
+```{r dataa, echo=TRUE}
+
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+curtis_ES<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+#summary(as.factor(curtis_ES$PARAM))
+curtis_WT<-filter(curtis_ES, PARAM=="TOTWT") # let's use whole plant weight because it has the largest number of observations   
+
+curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
+```
+
+
+```{r model, echo=FALSE}
+
+re_wt4<-rma.mv(LRR, LRR_var, mods=~DIV2,random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data=curtis_WT)
+summary(re_wt4)
+```
+
+## Assess model assumptions: homogeneity of variance and normality     
+
+
+__Profile likelihood plots__
+
+These plots let us know if model parameters are 'identifiable'. If they are identifiable, they peak at their estimates. If they are not, they may be flat which indicates that the model does not converge or is overparameterized.
+This is a fancy way of sayin that model estimates will be more reliable with a simpler random effects structure.  
+
+```{r profile, echo=FALSE}
+
+profile(re_wt4)
+
+```
+
+__Quantile-Quantile plots__
+
+```{r qq2, echo=TRUE}
+
+qqnorm(curtis_WT$LRR)
+qqline(curtis_WT$LRR)
+
+```
+
+__Model residuals__
+
+_Residuals vs. fitted_
+```{r residzz, echo=TRUE}
+plot(fitted(re_wt4), rstandard(re_wt4)$z)
+abline(h =0)
+
+```
+
+_Pearson model residuals_
+
+```{r resids2, echo=TRUE}
+
+plot(residuals(re_wt4, type="pearson"))
+abline(h =0)
+```
+
+
+__Influential points or outliers__
+
+_Cook's distance_
+  
+This plot helps you find outliers and influential points.  
+  
+  
+```{r cookk, echo=TRUE}
+plot(cooks.distance(re_wt4))
+```
+  
+
+
+## Publication bias  
+
+There are two main ways of detecting publication bias:  
+1) by testing if effect sizes are unusually high (i.e. asymmetric) or  
+2) estimating the number of studies needed to change the signficance of a mean effect size.  
+
+__Funnel plot__
+  
+```{r funnel, echo=TRUE}
+
+funnel(re_wt4)
+```
+  
+__Egger's regression__
+  
+  Egger's regression tests for funnel plot asymmetry. One can use a number of moderators; the most common are
+  the inverse of sampling variance or standard errors.
+  
+    ```{r egg2, echo=TRUE}
+  
+   test.egger = rma.mv(LRR,LRR_var, mod = LRR_var, random=list(~1|PAP_NO, ~1|XTRT, ~1|GEN_SPP), data = curtis_WT)  
+   
+    summary(test.egger)
+    ```
+
+  
+  _Note that there is a function in metafor ('regtest') for more simple models._  
+  
+__Fail-safe number__
+
+How many studies (or observations) would be needed to make the mean effect size effectively zero?  
+
+Note that the 'Rosenberg' and 'Rosenthal' methods estimates _weighted_ effect sizes, while the 'Orwin' method estimates _unweighted_ effect sizes. This methodological difference explains the contrasting magnitudes of the estimated fail-safe numbers.  
+```{r fsn, echo=T}
+fsn(LRR, LRR_var, data=curtis_WT,type="Rosenberg")
+
+fsn(LRR, LRR_var, data=curtis_WT,type="Rosenthal")
+
+fsn(LRR, LRR_var, data=curtis_WT,type="Orwin")
+
+
+```
+
+  
+__Trim & fill__
+  
+Trim & fill is a method to estimate the missing number of studies, possibly due to biases (publication or others) that omit or exclude the inclusion of extreme results. Doing so makes the funnel plot more symmetric.  
+
+Trim & fill is not currently implemented for 'rma.mv' objects, but can be done easily for either fixed or random effect models.
+
+```{r trim, echo=T}
+ree<-rma(LRR, LRR_var, data=curtis_WT)
+
+taf <- trimfill(ree)
+
+taf$k0 #number of studies to add
+
+taf$side #which side should they be added to?
+
+funnel(taf)
+```
+
+Note that points in _white_ are those added by the trim-and-fill analysis.  
+
+  
+  
+  
+
+  
+  

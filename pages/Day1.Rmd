@@ -1,0 +1,151 @@
+---
+title: "Calculating effect sizes"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(gdata,quietly=TRUE)
+require(ggplot2)
+require(dplyr)
+require(metafor)
+```
+
+## Load packages
+
+```
+require(gdata)
+require(metafor)
+require(dplyr)
+require(ggplot2)
+
+```
+
+
+## Download data
+
+For this exercise, we'll use the Curtis et al. (1999) data set that contains an array of plant measurements taken on 65 tree species under control and elevated CO~2~ levels 
+This data has been extracted from 84 papers and includes mean, standard deviation, coefficient of variation, and 
+number of observations.  
+
+
+
+```{r curtis,echo=TRUE}
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+
+str(curtis)
+```
+
+Please note that you may have to specify the location of the 'perl interpreter', e.g.
+
+```
+perl<-"http://www.nceas.ucsb.edu/meta/Curtis"
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1,perl=perl)
+```
+
+
+### Calculate effect sizes 
+
+For the Curtis data set, the response variables are all measured on a continuous scale. This allows us to calculate a number of
+traditional effect sizes, including Hedge's D and the log-response ratio. In 'metafor' these effect sizes are referred to as 'SMD' and 'ROM', respectively.  
+
+In this case, we need the following variables to calculate effect sizes: mean, standard deviation, and sample size. 
+
+Additionally, sampling variances can be estimated differently. The default setting (used here) is the 'large-sample approximation' (vtype='LS'). For Hedge's D,
+one can also estimate 'unbiased estimates' (vtype='UB'); for log-response ratio, 'LS' calculates sampling variance without assuming homoscedasticity while 'HO' assumes that variances are the same in control and treatment groups.  
+
+Note that 'group 1' (e.g. 'm1i' , 'sd1i') correspond to the treatment group and 'group 2' (e.g. 'm2i', 'sd2i') correspond to the control group.  
+
+### Hedges' D: Photosynthesis  
+
+```{r curtis_ES, echo=TRUE}
+
+curtis_ES<-escalc(measure='SMD', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("Hedges_D","Hedges_var"),data=curtis)
+
+```
+
+
+## Visualize effect sizes (part I): forest plots     
+
+Please note that the first 25 observations are presented for visualization reasons.  If you want to look at all effect sizes,  
+use the name of the larger data frame ('hedges_PN')  in the 'forest' function.  
+
+```{r forestplot, echo=TRUE}
+
+hedges_PN<-filter(curtis_ES, PARAM=="PN")
+hedges_PN<-arrange(hedges_PN, GENUS)
+hedges_PNN<-hedges_PN[1:25,]  # not necessary
+
+forest(hedges_PNN$Hedges_D,hedges_PNN$Hedges_var, slab=hedges_PNN$GENUS, showweights=FALSE)
+
+```
+
+__QUESTION: Do trees have higher or lower photosynthesis under ambient or elevated CO~2~ conditions?__
+
+
+
+## Visualize effect sizes (part II): explore moderators    
+
+Alternatives for visually assessing effect sizes (per group) include histograms or density distributions.  
+
+```{r forestplott, echo=TRUE}
+
+hedges_PN$SE<-sqrt(hedges_PN$Hedges_var)
+
+dodge <- position_dodge(width=1)
+
+ggplot(hedges_PN, aes(x=DIV2, y=Hedges_D, colour=DIV2)) + 
+    geom_hline(yintercept=0,color="red")+
+    #geom_errorbar(aes(ymin=Hedges_D-SE, ymax=Hedges_D+SE), width=.1,position=dodge) +
+    geom_point(position=dodge)+ labs(x="Plant group", y="Effect size")+
+     guides(fill=FALSE,colour=guide_legend(title="Plant group",title.position = "top"))+
+  
+  theme_bw()
+
+
+
+
+```
+
+__QUESTION: Are there differences among functional groups in terms of their response to elevated CO~2~?#__
+
+
+
+### LRR: water-use efficiency  
+
+The log-response ratio is a commonly used effect size and -- once back-transformed -- is easier to understand (e.g. the mean effect 
+size is 10% greater than the control).  
+
+```{r curtis_ES2, echo=TRUE}
+require(metafor,quietly = TRUE)
+
+curtis_ES2<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+
+str(curtis_ES2)
+
+```
+
+
+## Visualize effect sizes (part I) : forest plots     
+
+```{r forestplot2, echo=TRUE}
+require(metafor,quietly = TRUE)
+require(dplyr,quietly=TRUE)
+
+LRR_WUE<-filter(curtis_ES2, PARAM=="WUE")
+LRR_WUE<-arrange(LRR_WUE, GENUS)
+
+forest(LRR_WUE$LRR,LRR_WUE$LRR_var, slab=LRR_WUE$GENUS, showweights=TRUE)
+```
+
+Note that the percentage next to each effect size is the weight of each point.  
+
+
+__QUESTION: Do trees have higher or lower water-use efficiency in response to elevated CO~2~?__
+
+
+### Exercise: calculate effect sizes and create forest plots using the Stewart et al. bird abundance dataset
+
+1) Download the dataset [here](https://www.nceas.ucsb.edu/meta/publications.html#d_t_t)  
+
+2) Review metadata for these datasets [here](https://www.dropbox.com/s/yxjlwvvy4eg9uuw/Stewart-2005.pdf?dl=0) and [here](https://www.dropbox.com/s/j1lxvu1f4gtnotv/Stewart_et_al_2007.pdf?dl=0)  

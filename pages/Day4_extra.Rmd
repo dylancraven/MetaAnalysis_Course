@@ -1,0 +1,83 @@
+---
+title: "Build a phylogeny"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(pez,quietly=TRUE)
+require(phytools,quietly=TRUE)
+require(Taxonstand,quietly=TRUE)
+require(gdata,quietly=TRUE)
+require(metafor)
+```
+
+_Load packages_ 
+
+```
+require(gdata)
+require(metafor)
+require(dplyr)
+require(pez)
+require(phytools)
+require(ape)
+```
+
+
+
+```{r dataa, echo=FALSE}
+
+curtis<-read.xls("http://www.nceas.ucsb.edu/meta/Curtis/Curtis_CO2_database.xls",as.is=TRUE,verbose=FALSE,sheet=1)
+curtis_ES<-escalc(measure='ROM', m2i=X_AMB , sd2i=SD_AMB, n2i=N_AMB, m1i=X_ELEV, sd1i=SD_ELEV, n1i=N_ELEV, vtype='LS',var.names=c("LRR","LRR_var"),data=curtis)
+#summary(as.factor(curtis_ES$PARAM))
+curtis_WT<-dplyr::filter(curtis_ES, PARAM=="TOTWT") # let's use whole plant weight because it has the largest number of observations   
+
+curtis_WT$GEN_SPP<-paste(curtis_WT$GENUS,curtis_WT$SPECIES,sep="_")
+```
+
+
+__Clean species names__
+
+Species names are taxonomically resolved using [The Plant List](http://www.theplantlist.org/)  
+
+
+```{r tpl, echo=TRUE}
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+curtis_WT$GENUS<-tolower(as.character(curtis_WT$GENUS))
+curtis_WT$GENUS<-paste(toupper(substr(curtis_WT$GENUS, 1, 1)), substr(curtis_WT$GENUS, 2, nchar(curtis_WT$GENUS)), sep="")
+
+curtis_WT$SPECIES<-tolower(as.character(curtis_WT$SPECIES))
+curtis_WT$GEN_SPP2<-as.character(paste(curtis_WT$GENUS, curtis_WT$SPECIES,sep=" "))
+
+curtis_WT$GEN_SPP2<-ifelse(curtis_WT$GEN_SPP2=="Populusx euramericana","Populus × euramericana",curtis_WT$GEN_SPP2)
+
+spp<-unique(as.character(curtis_WT$GEN_SPP2))
+
+spp2 <- TPL(spp, corr = TRUE, repeats=10) # repeats allows you to re-connect to the TPL server
+
+spp2$new_species<-paste(spp2$New.Genus, spp2$New.Species,sep="_")
+
+length(unique(spp2$new_species)) #number of unique species identified via TPL
+length(spp) #number of unique species according to the data set
+
+write.csv(spp2,"TPL_sppnames.csv",row.names=F)
+```
+
+Build phylogeny using an [updated version](https://academic.oup.com/jpe/article/9/2/233/2928108/An-updated-megaphylogeny-of-plants-a-tool-for) of the Zanne et al. [2013](http://datadryad.org/resource/doi:10.5061/dryad.63q27)
+
+```{r phyloo, echo=TRUE}
+setwd('/homes/dc78cahe/Dropbox (iDiv)/Teaching/MetaAnalysis_Course/pages/Day4_files/')
+phy<-read.tree("PhytoPhylo.tre")
+
+local_tree <- congeneric.merge(phy,spp2$new_species,split="_")
+
+local_tree <- drop.tip(local_tree, setdiff(local_tree$tip.label, spp2$new_species))
+
+length(unique(local_tree$tip.label))
+
+plot(local_tree, type="fan",cex=0.8)
+
+write.tree(local_tree, "Curtis_phylogeny.tre")
+```
+
+Note that the pruned phylogeny has 35 unique species.  
