@@ -233,3 +233,13 @@ summary(re_nophy)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Accountring for phylogeny, in this particular case, did not alter the mean effect size. However, the confidence intervals around the mean effect size are wider when accounting for phylogeny.
+
+### Exercise: do your own meta-analysis (using either Gibson et al. or another data set of your own choosing)
+
+Tasks
+=====
+
+1.  Download data from [Gibson et al.](http://www.nature.com/nature/journal/v478/n7369/abs/nature10425.html#supplementary-information)
+2.  Calculate effect sizes
+3.  Fit multi-levelr andom effects model
+4.  Make visualisations of your results (effect sizes, forest plot, etc.)
